@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estação de Montagem</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --bg: #110f1a;
+    --surface: #1c1930;
+    --surface2: #262140;
+    --border: #332c54;
+    --text: #f0eefa;
+    --muted: #9690b8;
+    --accent: #8b7cf6;
+    --accent-dim: #8b7cf633;
+    --success: #34d399;
+    --success-dim: #34d39922;
+    --warning: #fbbf24;
+    --warning-dim: #fbbf2422;
+    --danger: #f87171;
+    --danger-dim: #f8717122;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Archivo', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  .display { font-family: 'Big Shoulders Display', sans-serif; font-weight: 900; }
+  button { font-family: inherit; cursor: pointer; border: none; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+  /* ── Tela de seleção de lote ───────────────────────────────── */
+  .tela-lotes { max-width: 720px; margin: 0 auto; padding: 48px 24px; width: 100%; }
+  .tela-lotes h1 { font-size: 36px; letter-spacing: .5px; }
+  .tela-lotes .sub { color: var(--muted); margin-top: 6px; font-size: 15px; }
+  .lista-lotes { display: flex; flex-direction: column; gap: 10px; margin-top: 32px; }
+  .lote-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; transition: border-color .15s, background .15s;
+  }
+  .lote-card.clicavel:hover { border-color: var(--accent); background: var(--surface2); cursor: pointer; }
+  .lote-card .info { display: flex; flex-direction: column; gap: 4px; }
+  .lote-card .nome { font-size: 18px; font-weight: 700; }
+  .lote-card .lote-tag { color: var(--muted); font-size: 13px; }
+  .lote-card .progresso { display: flex; align-items: center; gap: 10px; min-width: 180px; justify-content: flex-end; }
+  .barra { width: 110px; height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .barra-fill { height: 100%; background: var(--accent); }
+  .barra-fill.feito { background: var(--success); }
+  .contagem { font-size: 14px; color: var(--muted); min-width: 52px; text-align: right; }
+  .selo-feito { font-size: 12px; color: var(--success); font-weight: 600; }
+  .vazio { color: var(--muted); text-align: center; padding: 60px 0; font-size: 15px; }
+
+  /* ── Tela operacional ──────────────────────────────────────── */
+  .topo {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .topo .marca { display: flex; align-items: baseline; gap: 12px; }
+  .topo .marca .nome-edicao { font-size: 20px; font-weight: 700; }
+  .topo .marca .lote-tag { color: var(--muted); font-size: 14px; }
+  .topo .progresso-topo { display: flex; align-items: center; gap: 14px; }
+  .topo .contagem-grande { font-size: 22px; }
+  .topo .barra { width: 160px; }
+  .btn-sair {
+    background: var(--surface2); color: var(--muted); padding: 8px 16px;
+    border-radius: 8px; font-size: 13px; font-weight: 600;
+  }
+  .btn-sair:hover { color: var(--text); }
+
+  .palco { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; padding: 28px; min-height: 0; }
+  @media (max-width: 900px) { .palco { grid-template-columns: 1fr; } }
+
+  .coluna-itens { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .assinante-nome { font-size: 34px; line-height: 1.05; }
+  .assinante-meta { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .badge-plano {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 99px;
+    padding: 5px 14px; font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+
+  .grid-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .tile {
+    background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
+    padding: 16px; display: flex; flex-direction: column; gap: 8px; position: relative;
+    transition: border-color .2s, background .2s;
+  }
+  .tile .emoji { font-size: 22px; }
+  .tile .label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .tile .valor { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .tile .estado { position: absolute; top: 12px; right: 12px; font-size: 18px; }
+  .tile.ativo { border-color: var(--accent); background: var(--accent-dim); }
+  .tile.confirmado { border-color: var(--success); background: var(--success-dim); }
+  .tile.manual { border-color: var(--warning); background: var(--warning-dim); }
+
+  .coluna-camera { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .visor {
+    position: relative; border-radius: 18px; overflow: hidden; background: #000;
+    border: 4px solid var(--border); aspect-ratio: 4/3; transition: border-color .25s, box-shadow .25s;
+    flex: 1; min-height: 0;
+  }
+  .visor.ok { border-color: var(--success); box-shadow: 0 0 0 4px var(--success-dim); }
+  .visor.nok { border-color: var(--danger); box-shadow: 0 0 0 4px var(--danger-dim); }
+  .visor.checando { border-color: var(--warning); }
+  .visor video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .visor .sem-camera {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; color: var(--muted); text-align: center; padding: 24px;
+  }
+  .ref-thumb {
+    position: absolute; bottom: 12px; right: 12px; width: 92px; height: 92px;
+    border-radius: 10px; object-fit: cover; border: 3px solid #fff;
+  }
+  .conferindo-nome {
+    position: absolute; top: 0; left: 0; right: 0; padding: 10px 16px;
+    background: linear-gradient(180deg, #000000aa, transparent); font-size: 16px; font-weight: 600;
+  }
+  .status-linha {
+    display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 24px;
+  }
+  .status-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--muted); flex-shrink: 0; }
+  .status-dot.checando { background: var(--warning); animation: pulsa 1s infinite; }
+  .status-dot.ok { background: var(--success); }
+  .status-dot.nok { background: var(--danger); }
+  @keyframes pulsa { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
+
+  .acoes { display: flex; gap: 12px; }
+  .btn-grande {
+    flex: 1; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-manual { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-manual:hover { border-color: var(--muted); }
+  .btn-finalizar { background: var(--success); color: #072616; }
+  .btn-finalizar:hover { filter: brightness(1.08); }
+  .btn-finalizar:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+  .tela-concluida {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 40px;
+  }
+  .tela-concluida .icone { font-size: 64px; }
+  .tela-concluida h2 { font-size: 30px; }
+  .tela-concluida p { color: var(--muted); font-size: 15px; }
+
+  .hidden { display: none !important; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="tela-lotes" class="tela-lotes">
+  <h1>🔭 Estação de Montagem</h1>
+  <div class="sub">Escolha o lote em andamento pra começar a conferência</div>
+  <div id="lista-lotes" class="lista-lotes">
+    <div class="vazio">Carregando lotes…</div>
+  </div>
+</div>
+
+<div id="tela-operacional" class="hidden" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+  <div class="topo">
+    <div class="marca">
+      <span class="nome-edicao" id="topo-nome-edicao">—</span>
+      <span class="lote-tag" id="topo-lote">—</span>
+    </div>
+    <div class="progresso-topo">
+      <span class="contagem-grande mono" id="topo-contagem">0/0</span>
+      <div class="barra"><div class="barra-fill" id="topo-barra" style="width:0%"></div></div>
+      <button class="btn-sair" onclick="sairDoLote()">← Trocar lote</button>
+    </div>
+  </div>
+
+  <div class="palco">
+    <div class="coluna-itens">
+      <div>
+        <div class="assinante-nome display" id="box-assinante">—</div>
+        <div class="assinante-meta">
+          <span class="badge-plano" id="box-plano">—</span>
+        </div>
+      </div>
+      <div class="grid-tiles" id="grid-itens"></div>
+    </div>
+
+    <div class="coluna-camera">
+      <div class="visor" id="visor">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="conferindo-nome" id="conferindo-nome" hidden></div>
+        <img id="ref-thumb" class="ref-thumb hidden" alt="referência">
+        <div class="sem-camera hidden" id="sem-camera">
+          <div style="font-size:32px">📷</div>
+          <div id="sem-camera-msg">Autorize o acesso à câmera no navegador pra começar.</div>
+        </div>
+      </div>
+      <div class="status-linha">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-texto">Aguardando…</span>
+      </div>
+      <div class="acoes">
+        <button class="btn-grande btn-manual" id="btn-manual" onclick="confirmarManual()">✓ Confirmar manualmente</button>
+        <button class="btn-grande btn-finalizar" id="btn-finalizar" onclick="finalizarBox()">📦 Finalizar box</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tela-concluida" class="tela-concluida hidden">
+  <div class="icone">🎉</div>
+  <h2>Lote concluído!</h2>
+  <p id="concluida-sub">Todas as boxes desse lote foram montadas.</p>
+  <button class="btn-grande btn-manual" style="max-width:220px" onclick="sairDoLote()">← Escolher outro lote</button>
+</div>
+
+<canvas id="canvas-detect" width="48" height="36" class="hidden"></canvas>
+<canvas id="canvas-captura" class="hidden"></canvas>
+
+<script>
+'use strict';
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzqLGRvdtarSZ1f6dtJdQMIZ-strVOM5XjfdOAnLzCtQUMWpBsn2xC_kfo0QhWOdqk_/exec";
+
+async function apiGet(action, args) {
+  const url = API_URL + "?api=1&action=" + encodeURIComponent(action) + "&args=" + encodeURIComponent(JSON.stringify(args || []));
+  const r = await fetch(url);
+  return r.json();
+}
+async function apiPost(action, args) {
+  const r = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: action, args: args || [] })
+  });
+  return r.json();
+}
+
+// ── Parse de "Itens da box" (porta direta do BoxManager) ──────────────
+function parseItensBox(texto) {
+  const fixos = ['revista', 'cartão de boas-vindas', 'cartao de boas-vindas', 'presente de aniversário', 'presente de aniversario', '🎂'];
+  const raw = String(texto || '').split('|').map(function(item) {
+    const partes = item.trim().split(':');
+    if (partes.length >= 2) {
+      return { label: partes[0].trim(), valor: partes.slice(1).join(':').trim(), semProduto: false };
+    }
+    const label = item.trim();
+    const ehFixo = fixos.some(function(f) { return label.toLowerCase().includes(f); });
+    return { label: label, valor: '', semProduto: !ehFixo };
+  }).filter(function(i) { return i.label; });
+
+  const ordemTipo = function(label) {
+    const l = label.toLowerCase();
+    if (l.startsWith('café') || l.startsWith('cafe')) return 1;
+    if (l.includes('chocolate')) return 2;
+    if (l.includes('brinde'))    return 3;
+    if (l.includes('revista'))   return 4;
+    if (l.includes('cartão') || l.includes('boas-vindas')) return 5;
+    if (l.includes('aniversário') || l.includes('presente')) return 6;
+    return 7;
+  };
+  return raw.sort(function(a, b) { return ordemTipo(a.label) - ordemTipo(b.label); });
+}
+
+function emojiDoItem(label) {
+  const l = label.toLowerCase();
+  if (l.startsWith('café') || l.startsWith('cafe')) return '☕';
+  if (l.includes('chocolate')) return '🍫';
+  if (l.includes('brinde')) return '🎁';
+  if (l.includes('revista')) return '📖';
+  if (l.includes('cartão') || l.includes('boas-vindas')) return '💌';
+  if (l.includes('aniversário') || l.includes('presente')) return '🎂';
+  return '✓';
+}
+
+// ── Estado global ──────────────────────────────────────────────────
+let idEdicaoAtual = null, nomeEdicaoAtual = null, loteAtual = null;
+let boxes = [], boxIdx = 0;
+let produtosPorNome = {};
+let itensAtual = [];
+let idxItemAtivo = -1;
+let videoStream = null;
+let loopId = null;
+let frameAnterior = null;
+let estavelDesde = null;
+let ultimaTentativa = 0;
+let conferindo = false;
+
+const LIMIAR_ESTAVEL = 4;
+const TEMPO_ESTAVEL_MS = 900;
+const COOLDOWN_MS = 2800;
+
+// ── Tela 1: escolher lote ──────────────────────────────────────────
+async function carregarListaLotes() {
+  const container = document.getElementById('lista-lotes');
+  try {
+    const lista = await apiGet('getEdicoesComLote', []);
+    if (!lista.length) {
+      container.innerHTML = '<div class="vazio">Nenhum lote enviado pra Montagem ainda.</div>';
+      return;
+    }
+    container.innerHTML = lista.map(function(e, i) {
+      const feito = e.finalizados === e.total;
+      const pct = e.total > 0 ? Math.round(e.finalizados / e.total * 100) : 0;
+      return '<div class="lote-card ' + (feito ? '' : 'clicavel') + '" ' +
+        (feito ? '' : 'onclick="entrarNoLote(' + i + ')"') + '>' +
+        '<div class="info">' +
+          '<span class="nome">' + e.nomeEdicao + '</span>' +
+          '<span class="lote-tag">📦 ' + e.lote + '</span>' +
+        '</div>' +
+        '<div class="progresso">' +
+          '<div class="barra"><div class="barra-fill ' + (feito ? 'feito' : '') + '" style="width:' + pct + '%"></div></div>' +
+          '<span class="contagem mono">' + e.finalizados + '/' + e.total + '</span>' +
+          (feito ? '<span class="selo-feito">✓ feito</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+    window._listaLotesCache = lista;
+  } catch (err) {
+    container.innerHTML = '<div class="vazio">⚠️ Erro ao carregar lotes: ' + err.message + '</div>';
+  }
+}
+
+async function entrarNoLote(i) {
+  const escolhido = window._listaLotesCache[i];
+  idEdicaoAtual = escolhido.idEdicao;
+  nomeEdicaoAtual = escolhido.nomeEdicao;
+  loteAtual = escolhido.lote;
+  try { localStorage.setItem('kiosk_lote', JSON.stringify(escolhido)); } catch (e) {}
+
+  document.getElementById('tela-lotes').classList.add('hidden');
+  document.getElementById('tela-concluida').classList.add('hidden');
+  document.getElementById('tela-operacional').classList.remove('hidden');
+  document.getElementById('tela-operacional').style.display = 'flex';
+  document.getElementById('topo-nome-edicao').textContent = nomeEdicaoAtual;
+  document.getElementById('topo-lote').textContent = '📦 ' + loteAtual;
+
+  await carregarDadosDoLote();
+  iniciarCamera();
+}
+
+function sairDoLote() {
+  pararLoopDeteccao();
+  document.getElementById('tela-operacional').classList.add('hidden');
+  document.getElementById('tela-concluida').classList.add('hidden');
+  document.getElementById('tela-lotes').classList.remove('hidden');
+  carregarListaLotes();
+}
+
+async function carregarDadosDoLote() {
+  const [boxesResult, produtos] = await Promise.all([
+    apiGet('getBoxesParaMontagem', [idEdicaoAtual, loteAtual]),
+    apiGet('getProdutos', [])
+  ]);
+  boxes = boxesResult;
+  produtosPorNome = {};
+  produtos.forEach(function(p) {
+    const nome = String(p['Nome do produto'] || '').trim().toLowerCase();
+    if (nome) produtosPorNome[nome] = { id: p['ID'], nome: p['Nome do produto'], fotoUrl: p.fotoUrl };
+  });
+  boxIdx = boxes.findIndex(function(b) { return b['Status de montagem'] !== 'Finalizado'; });
+  atualizarProgressoTopo();
+  if (boxIdx === -1) { mostrarLoteConcluido(); return; }
+  carregarBoxAtual();
+}
+
+function atualizarProgressoTopo() {
+  const total = boxes.length;
+  const feitos = boxes.filter(function(b) { return b['Status de montagem'] === 'Finalizado'; }).length;
+  document.getElementById('topo-contagem').textContent = feitos + '/' + total;
+  document.getElementById('topo-barra').style.width = (total > 0 ? Math.round(feitos / total * 100) : 0) + '%';
+}
+
+function mostrarLoteConcluido() {
+  pararLoopDeteccao();
+  document.getElementById('tela-operacional').classList.add('hidden');
+  document.getElementById('tela-concluida').classList.remove('hidden');
+  document.getElementById('concluida-sub').textContent = 'Todas as ' + boxes.length + ' boxes do ' + loteAtual + ' foram montadas.';
+}
+
+// ── Box atual ────────────────────────────────────────────────────
+function carregarBoxAtual() {
+  const box = boxes[boxIdx];
+  const itensBrutos = parseItensBox(box['Itens da box']);
+  itensAtual = itensBrutos.map(function(item) {
+    const produto = item.valor ? produtosPorNome[item.valor.trim().toLowerCase()] : null;
+    const precisaConferencia = !!produto && !!produto.fotoUrl;
+    return {
+      label: item.label, valor: item.valor, semProduto: item.semProduto,
+      produto: produto || null, precisaConferencia: precisaConferencia,
+      status: precisaConferencia ? 'pendente' : 'na'
+    };
+  });
+  idxItemAtivo = itensAtual.findIndex(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
+
+  document.getElementById('box-assinante').textContent = box['Nome assinante'] || '—';
+  document.getElementById('box-plano').textContent = box._plano || '—';
+  renderGridItens();
+  renderPainelCamera();
+  frameAnterior = null;
+  estavelDesde = null;
+}
+
+function renderGridItens() {
+  const grid = document.getElementById('grid-itens');
+  grid.innerHTML = itensAtual.map(function(item, idx) {
+    const cls = idx === idxItemAtivo ? 'ativo' : (item.status === 'confirmado' ? 'confirmado' : (item.status === 'manual' ? 'manual' : ''));
+    const estado = item.status === 'confirmado' ? '🟢' : item.status === 'manual' ? '🟡' : '';
+    const valorExibido = item.valor && item.valor !== '—' ? item.valor : (item.semProduto ? '⚠️ não selecionado' : '✓');
+    return '<div class="tile ' + cls + '">' +
+      (estado ? '<span class="estado">' + estado + '</span>' : '') +
+      '<span class="emoji">' + emojiDoItem(item.label) + '</span>' +
+      '<span class="label">' + item.label + '</span>' +
+      '<span class="valor">' + valorExibido + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderPainelCamera() {
+  const visor = document.getElementById('visor');
+  visor.classList.remove('ok', 'nok', 'checando');
+  const refThumb = document.getElementById('ref-thumb');
+  const nomeEl = document.getElementById('conferindo-nome');
+  const btnFinalizar = document.getElementById('btn-finalizar');
+  const btnManual = document.getElementById('btn-manual');
+
+  const item = itensAtual[idxItemAtivo];
+  if (!item) {
+    nomeEl.hidden = true;
+    refThumb.classList.add('hidden');
+    btnManual.disabled = true;
+    btnFinalizar.disabled = false;
+    setStatus('na', 'Tudo conferido — pode finalizar a box.');
+    return;
+  }
+
+  btnManual.disabled = false;
+  btnFinalizar.disabled = itensAtual.some(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
+  nomeEl.hidden = false;
+  nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome;
+  if (item.produto.fotoUrl) {
+    refThumb.src = item.produto.fotoUrl;
+    refThumb.classList.remove('hidden');
+  } else {
+    refThumb.classList.add('hidden');
+  }
+  setStatus('checando', 'Aponte o produto pra câmera — verificando automaticamente…');
+}
+
+function setStatus(tipo, texto) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + (tipo === 'ok' ? 'ok' : tipo === 'nok' ? 'nok' : tipo === 'checando' ? 'checando' : '');
+  document.getElementById('status-texto').textContent = texto;
+}
+
+// ── Câmera ao vivo ───────────────────────────────────────────────
+async function iniciarCamera() {
+  if (videoStream) { iniciarLoopDeteccao(); return; }
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 960 } } });
+    document.getElementById('video').srcObject = videoStream;
+    document.getElementById('sem-camera').classList.add('hidden');
+    iniciarLoopDeteccao();
+  } catch (e) {
+    document.getElementById('sem-camera').classList.remove('hidden');
+    document.getElementById('sem-camera-msg').textContent = 'Não consegui acessar a câmera: ' + e.message;
+  }
+}
+
+function iniciarLoopDeteccao() {
+  if (loopId) return;
+  loopId = setInterval(tickDeteccao, 400);
+}
+function pararLoopDeteccao() {
+  if (loopId) { clearInterval(loopId); loopId = null; }
+  if (videoStream) { videoStream.getTracks().forEach(function(t) { t.stop(); }); videoStream = null; }
+}
+
+function tickDeteccao() {
+  if (conferindo) return;
+  const item = itensAtual[idxItemAtivo];
+  if (!item) return;
+  const video = document.getElementById('video');
+  if (!video.videoWidth) return;
+
+  const canvas = document.getElementById('canvas-detect');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const frame = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+  if (frameAnterior) {
+    let diff = 0;
+    for (let i = 0; i < frame.length; i += 4) diff += Math.abs(frame[i] - frameAnterior[i]);
+    const mediaDiff = diff / (frame.length / 4);
+    if (mediaDiff < LIMIAR_ESTAVEL) {
+      if (!estavelDesde) estavelDesde = Date.now();
+    } else {
+      estavelDesde = null;
+    }
+  }
+  frameAnterior = frame;
+
+  const agora = Date.now();
+  if (estavelDesde && (agora - estavelDesde) > TEMPO_ESTAVEL_MS && (agora - ultimaTentativa) > COOLDOWN_MS) {
+    ultimaTentativa = agora;
+    dispararConferencia();
+  }
+}
+
+async function dispararConferencia() {
+  const item = itensAtual[idxItemAtivo];
+  if (!item || conferindo) return;
+  conferindo = true;
+  document.getElementById('visor').classList.add('checando');
+  setStatus('checando', 'Verificando…');
+
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas-captura');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  const base64 = canvas.toDataURL('image/jpeg', 0.85);
+
+  try {
+    const res = await apiPost('conferirProdutoCamera', [item.produto.id, item.produto.nome, base64, 'image/jpeg']);
+    conferindo = false;
+    document.getElementById('visor').classList.remove('checando');
+    if (res.erro) { setStatus('nok', '⚠️ ' + res.erro); return; }
+    if (res.bate) {
+      item.status = 'confirmado';
+      document.getElementById('visor').classList.add('ok');
+      setStatus('ok', '✅ Bateu! ' + (res.motivo || ''));
+      renderGridItens();
+      setTimeout(avancarProximoItem, 900);
+    } else {
+      document.getElementById('visor').classList.add('nok');
+      setStatus('nok', '❌ Não bateu — ' + (res.motivo || 'tentando de novo…'));
+      setTimeout(function() { document.getElementById('visor').classList.remove('nok'); }, 1800);
+    }
+  } catch (err) {
+    conferindo = false;
+    document.getElementById('visor').classList.remove('checando');
+    setStatus('nok', '⚠️ Erro: ' + err.message);
+  }
+}
+
+function confirmarManual() {
+  const item = itensAtual[idxItemAtivo];
+  if (!item) return;
+  item.status = 'manual';
+  renderGridItens();
+  avancarProximoItem();
+}
+
+function avancarProximoItem() {
+  idxItemAtivo = itensAtual.findIndex(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
+  frameAnterior = null;
+  estavelDesde = null;
+  renderPainelCamera();
+  document.getElementById('visor').classList.remove('ok', 'nok');
+}
+
+async function finalizarBox() {
+  const box = boxes[boxIdx];
+  const btn = document.getElementById('btn-finalizar');
+  btn.disabled = true;
+  btn.textContent = 'Confirmando…';
+  try {
+    await apiPost('confirmarMontagemBox', [box._linha]);
+    box['Status de montagem'] = 'Finalizado';
+    atualizarProgressoTopo();
+    boxIdx = boxes.findIndex(function(b) { return b['Status de montagem'] !== 'Finalizado'; });
+    if (boxIdx === -1) { mostrarLoteConcluido(); return; }
+    carregarBoxAtual();
+  } catch (err) {
+    setStatus('nok', '⚠️ Erro ao finalizar: ' + err.message);
+  } finally {
+    btn.textContent = '📦 Finalizar box';
+  }
+}
+
+// Atalho de teclado: espaço confirma manualmente o item atual (mãos ocupadas com o produto)
+window.addEventListener('keydown', function(e) {
+  if (e.code === 'Space' && !document.getElementById('tela-operacional').classList.contains('hidden')) {
+    e.preventDefault();
+    if (itensAtual[idxItemAtivo]) confirmarManual();
+  }
+});
+
+carregarListaLotes();
+</script>
+</body>
+</html>
