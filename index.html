@@ -373,7 +373,10 @@ async function carregarDadosDoLote() {
   produtosPorNome = {};
   produtos.forEach(function(p) {
     const nome = String(p['Nome do produto'] || '').trim().toLowerCase();
-    if (nome) produtosPorNome[nome] = { id: p['ID'], nome: p['Nome do produto'], fotoUrl: p.fotoUrl };
+    if (nome) produtosPorNome[nome] = {
+      id: p['ID'], nome: p['Nome do produto'], fotoUrl: p.fotoUrl,
+      descricao: String(p['Descrição'] || '').trim()
+    };
   });
   boxIdx = boxes.findIndex(function(b) { return b['Status de montagem'] !== 'Finalizado'; });
   atualizarProgressoTopo();
@@ -401,7 +404,9 @@ function carregarBoxAtual() {
   const itensBrutos = parseItensBox(box['Itens da box']);
   itensAtual = itensBrutos.map(function(item) {
     const produto = item.valor ? produtosPorNome[item.valor.trim().toLowerCase()] : null;
-    const precisaConferencia = !!produto && !!produto.fotoUrl;
+    // Descrição (texto) tem prioridade — não precisa buscar nada no Drive, é bem mais
+    // rápido. Foto de referência é o modo antigo, mantido pra quem já cadastrou só foto.
+    const precisaConferencia = !!produto && (!!produto.descricao || !!produto.fotoUrl);
     return {
       label: item.label, valor: item.valor, semProduto: item.semProduto,
       produto: produto || null, precisaConferencia: precisaConferencia,
@@ -454,10 +459,14 @@ function renderPainelCamera() {
   btnManual.disabled = false;
   btnFinalizar.disabled = itensAtual.some(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
   nomeEl.hidden = false;
-  nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome;
-  if (item.produto.fotoUrl) {
+  if (item.produto.descricao) {
+    nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome + ' — ' + item.produto.descricao;
+    refThumb.classList.add('hidden');
+  } else if (item.produto.fotoUrl) {
+    nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome;
     refThumb.src = item.produto.fotoUrl;
     refThumb.classList.remove('hidden');
+    getFotoReferenciaCacheada(item.produto.id); // começa a buscar no Drive já, antes do operador nem posicionar o produto
   } else {
     refThumb.classList.add('hidden');
   }
@@ -524,6 +533,16 @@ function tickDeteccao() {
   }
 }
 
+// Cache da foto de referência por produto (só pra quem não tem descrição ainda) — busca
+// no Drive 1x só (promise compartilhada evita buscar 2x se cair aqui antes de terminar).
+let fotoRefCache = {};
+function getFotoReferenciaCacheada(idProduto) {
+  if (!fotoRefCache[idProduto]) {
+    fotoRefCache[idProduto] = apiPost('getFotoReferenciaBase64', [idProduto]);
+  }
+  return fotoRefCache[idProduto];
+}
+
 async function dispararConferencia() {
   const item = itensAtual[idxItemAtivo];
   if (!item || conferindo) return;
@@ -538,7 +557,16 @@ async function dispararConferencia() {
   const base64 = canvas.toDataURL('image/jpeg', 0.85);
 
   try {
-    const res = await apiPost('conferirProdutoCamera', [item.produto.id, item.produto.nome, base64, 'image/jpeg']);
+    // Descrição é o caminho rápido (1 imagem, sem Drive). Foto de referência é o modo
+    // antigo, só usado se o produto ainda não tem descrição cadastrada.
+    let res;
+    if (item.produto.descricao) {
+      res = await apiPost('conferirDescricaoCamera', [item.produto.nome, item.produto.descricao, base64, 'image/jpeg']);
+    } else {
+      const ref = await getFotoReferenciaCacheada(item.produto.id);
+      if (ref.erro) { res = ref; }
+      else { res = await apiPost('conferirFotosCamera', [item.produto.nome, ref.base64, ref.mime, base64, 'image/jpeg']); }
+    }
     conferindo = false;
     document.getElementById('visor').classList.remove('checando');
     if (res.erro) { setStatus('nok', '⚠️ ' + res.erro); return; }
