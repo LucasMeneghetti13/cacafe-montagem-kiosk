@@ -86,71 +86,41 @@
   }
   .btn-sair:hover { color: var(--text); }
 
-  .palco { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; padding: 20px 28px; min-height: 0; overflow: hidden; }
-  @media (max-width: 900px) { .palco { grid-template-columns: 1fr; } }
+  .palco { flex: 1; display: flex; flex-direction: column; gap: 18px; padding: 22px 32px; min-height: 0; overflow: hidden; }
 
-  .coluna-itens { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; overflow-y: auto; }
   .assinante-nome { font-size: 30px; line-height: 1.05; }
   .assinante-meta { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
   .badge-plano {
     background: var(--surface2); border: 1px solid var(--border); border-radius: 99px;
     padding: 5px 14px; font-size: 13px; font-weight: 600; color: var(--muted);
   }
+  .checklist-hint { color: var(--muted); font-size: 14px; }
 
-  .grid-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .grid-tiles {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px;
+    flex: 1; overflow-y: auto; min-height: 0; align-content: start;
+  }
   .tile {
-    background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
-    padding: 16px; display: flex; flex-direction: column; gap: 8px; position: relative;
-    transition: border-color .2s, background .2s;
+    background: var(--surface); border: 2px solid var(--border); border-radius: 16px;
+    padding: 20px; display: flex; flex-direction: column; gap: 10px; position: relative;
+    transition: border-color .15s, background .15s, transform .1s; min-height: 118px;
   }
-  .tile .emoji { font-size: 22px; }
-  .tile .label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
-  .tile .valor { font-size: 16px; font-weight: 600; line-height: 1.25; }
-  .tile .estado { position: absolute; top: 12px; right: 12px; font-size: 18px; }
-  .tile.ativo { border-color: var(--accent); background: var(--accent-dim); }
+  .tile:hover { border-color: var(--muted); }
+  .tile:active { transform: scale(.98); }
+  .tile .emoji { font-size: 26px; }
+  .tile .label { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+  .tile .valor { font-size: 18px; font-weight: 600; line-height: 1.25; }
+  .tile .estado { position: absolute; top: 14px; right: 14px; font-size: 22px; }
+  .tile.proximo { border-color: var(--accent); background: var(--accent-dim); }
   .tile.confirmado { border-color: var(--success); background: var(--success-dim); }
-  .tile.manual { border-color: var(--warning); background: var(--warning-dim); }
 
-  .coluna-camera { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  .visor {
-    position: relative; border-radius: 18px; overflow: hidden; background: #000;
-    border: 4px solid var(--border); aspect-ratio: 4/3; transition: border-color .25s, box-shadow .25s;
-    flex: 1; min-height: 0;
-  }
-  .visor.ok { border-color: var(--success); box-shadow: 0 0 0 4px var(--success-dim); }
-  .visor.nok { border-color: var(--danger); box-shadow: 0 0 0 4px var(--danger-dim); }
-  .visor.checando { border-color: var(--warning); }
-  .visor video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .visor .sem-camera {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 10px; color: var(--muted); text-align: center; padding: 24px;
-  }
-  .ref-thumb {
-    position: absolute; bottom: 12px; right: 12px; width: 92px; height: 92px;
-    border-radius: 10px; object-fit: cover; border: 3px solid #fff;
-  }
-  .conferindo-nome {
-    position: absolute; top: 0; left: 0; right: 0; padding: 10px 16px;
-    background: linear-gradient(180deg, #000000aa, transparent); font-size: 16px; font-weight: 600;
-  }
-  .status-linha {
-    display: flex; align-items: center; gap: 10px; font-size: 15px; min-height: 24px;
-  }
-  .status-dot { width: 10px; height: 10px; border-radius: 99px; background: var(--muted); flex-shrink: 0; }
-  .status-dot.checando { background: var(--warning); animation: pulsa 1s infinite; }
-  .status-dot.ok { background: var(--success); }
-  .status-dot.nok { background: var(--danger); }
-  @keyframes pulsa { 0%,100%{ opacity:1 } 50%{ opacity:.35 } }
-
-  .acoes { display: flex; gap: 12px; }
+  .rodape { display: flex; gap: 12px; flex-shrink: 0; }
   .btn-grande {
-    flex: 1; padding: 18px; border-radius: 14px; font-size: 16px; font-weight: 700;
+    flex: 1; padding: 20px; border-radius: 14px; font-size: 18px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .btn-manual { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-  .btn-manual:hover { border-color: var(--muted); }
   .btn-finalizar { background: var(--success); color: #072616; }
-  .btn-finalizar:hover { filter: brightness(1.08); }
+  .btn-finalizar:hover:not(:disabled) { filter: brightness(1.08); }
   .btn-finalizar:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
 
   .tela-concluida {
@@ -192,34 +162,16 @@
   <div id="busca-aviso" class="busca-aviso hidden"></div>
 
   <div class="palco">
-    <div class="coluna-itens">
-      <div>
-        <div class="assinante-nome display" id="box-assinante">—</div>
-        <div class="assinante-meta">
-          <span class="badge-plano" id="box-plano">—</span>
-        </div>
+    <div>
+      <div class="assinante-nome display" id="box-assinante">—</div>
+      <div class="assinante-meta">
+        <span class="badge-plano" id="box-plano">—</span>
       </div>
-      <div class="grid-tiles" id="grid-itens"></div>
+      <div class="checklist-hint">Toque em cada item ao colocar na caixa. Só libera "Finalizar" quando todos estiverem marcados.</div>
     </div>
-
-    <div class="coluna-camera">
-      <div class="visor" id="visor">
-        <video id="video" autoplay playsinline muted></video>
-        <div class="conferindo-nome" id="conferindo-nome" hidden></div>
-        <img id="ref-thumb" class="ref-thumb hidden" alt="referência">
-        <div class="sem-camera hidden" id="sem-camera">
-          <div style="font-size:32px">📷</div>
-          <div id="sem-camera-msg">Autorize o acesso à câmera no navegador pra começar.</div>
-        </div>
-      </div>
-      <div class="status-linha">
-        <span class="status-dot" id="status-dot"></span>
-        <span id="status-texto">Aguardando…</span>
-      </div>
-      <div class="acoes">
-        <button class="btn-grande btn-manual" id="btn-manual" onclick="confirmarManual()">✓ Confirmar manualmente</button>
-        <button class="btn-grande btn-finalizar" id="btn-finalizar" onclick="finalizarBox()">📦 Finalizar box</button>
-      </div>
+    <div class="grid-tiles" id="grid-itens"></div>
+    <div class="rodape">
+      <button class="btn-grande btn-finalizar" id="btn-finalizar" onclick="finalizarBox()" disabled>📦 Finalizar box</button>
     </div>
   </div>
 </div>
@@ -228,11 +180,8 @@
   <div class="icone">🎉</div>
   <h2>Lote concluído!</h2>
   <p id="concluida-sub">Todas as boxes desse lote foram montadas.</p>
-  <button class="btn-grande btn-manual" style="max-width:220px" onclick="sairDoLote()">← Escolher outro lote</button>
+  <button class="btn-grande btn-sair" style="max-width:220px" onclick="sairDoLote()">← Escolher outro lote</button>
 </div>
-
-<canvas id="canvas-detect" width="48" height="36" class="hidden"></canvas>
-<canvas id="canvas-captura" class="hidden"></canvas>
 
 <script>
 'use strict';
@@ -293,19 +242,7 @@ function emojiDoItem(label) {
 // ── Estado global ──────────────────────────────────────────────────
 let idEdicaoAtual = null, nomeEdicaoAtual = null, loteAtual = null;
 let boxes = [], boxIdx = 0;
-let produtosPorNome = {};
 let itensAtual = [];
-let idxItemAtivo = -1;
-let videoStream = null;
-let loopId = null;
-let frameAnterior = null;
-let estavelDesde = null;
-let ultimaTentativa = 0;
-let conferindo = false;
-
-const LIMIAR_ESTAVEL = 4;
-const TEMPO_ESTAVEL_MS = 900;
-const COOLDOWN_MS = 2800;
 
 // ── Tela 1: escolher lote ──────────────────────────────────────────
 async function carregarListaLotes() {
@@ -353,11 +290,9 @@ async function entrarNoLote(i) {
   document.getElementById('topo-lote').textContent = '📦 ' + loteAtual;
 
   await carregarDadosDoLote();
-  iniciarCamera();
 }
 
 function sairDoLote() {
-  pararLoopDeteccao();
   document.getElementById('tela-operacional').classList.add('hidden');
   document.getElementById('tela-concluida').classList.add('hidden');
   document.getElementById('tela-lotes').classList.remove('hidden');
@@ -365,19 +300,7 @@ function sairDoLote() {
 }
 
 async function carregarDadosDoLote() {
-  const [boxesResult, produtos] = await Promise.all([
-    apiGet('getBoxesParaMontagem', [idEdicaoAtual, loteAtual]),
-    apiGet('getProdutos', [])
-  ]);
-  boxes = boxesResult;
-  produtosPorNome = {};
-  produtos.forEach(function(p) {
-    const nome = String(p['Nome do produto'] || '').trim().toLowerCase();
-    if (nome) produtosPorNome[nome] = {
-      id: p['ID'], nome: p['Nome do produto'], fotoUrl: p.fotoUrl,
-      descricao: String(p['Descrição'] || '').trim()
-    };
-  });
+  boxes = await apiGet('getBoxesParaMontagem', [idEdicaoAtual, loteAtual]);
   boxIdx = boxes.findIndex(function(b) { return b['Status de montagem'] !== 'Finalizado'; });
   atualizarProgressoTopo();
   if (boxIdx === -1) { mostrarLoteConcluido(); return; }
@@ -392,216 +315,61 @@ function atualizarProgressoTopo() {
 }
 
 function mostrarLoteConcluido() {
-  pararLoopDeteccao();
   document.getElementById('tela-operacional').classList.add('hidden');
   document.getElementById('tela-concluida').classList.remove('hidden');
   document.getElementById('concluida-sub').textContent = 'Todas as ' + boxes.length + ' boxes do ' + loteAtual + ' foram montadas.';
 }
 
-// ── Box atual ────────────────────────────────────────────────────
+// ── Box atual — checklist obrigatório, sem câmera: cada item da box precisa
+// ser tocado (confirmado) antes de liberar "Finalizar box". É o jeito mais
+// rápido (zero espera, nenhuma chamada externa) e o mais seguro contra
+// esquecer item — não dá pra finalizar sem marcar todos.
 function carregarBoxAtual() {
   const box = boxes[boxIdx];
-  const itensBrutos = parseItensBox(box['Itens da box']);
-  itensAtual = itensBrutos.map(function(item) {
-    const produto = item.valor ? produtosPorNome[item.valor.trim().toLowerCase()] : null;
-    // Descrição (texto) tem prioridade — não precisa buscar nada no Drive, é bem mais
-    // rápido. Foto de referência é o modo antigo, mantido pra quem já cadastrou só foto.
-    const precisaConferencia = !!produto && (!!produto.descricao || !!produto.fotoUrl);
-    return {
-      label: item.label, valor: item.valor, semProduto: item.semProduto,
-      produto: produto || null, precisaConferencia: precisaConferencia,
-      status: precisaConferencia ? 'pendente' : 'na'
-    };
+  itensAtual = parseItensBox(box['Itens da box']).map(function(item) {
+    return { label: item.label, valor: item.valor, semProduto: item.semProduto, status: 'pendente' };
   });
-  idxItemAtivo = itensAtual.findIndex(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
 
   document.getElementById('box-assinante').textContent = box['Nome assinante'] || '—';
   document.getElementById('box-plano').textContent = box._plano || '—';
   renderGridItens();
-  renderPainelCamera();
-  frameAnterior = null;
-  estavelDesde = null;
 }
 
 function renderGridItens() {
   const grid = document.getElementById('grid-itens');
+  const idxProximo = itensAtual.findIndex(function(i) { return i.status === 'pendente'; });
   grid.innerHTML = itensAtual.map(function(item, idx) {
-    const cls = idx === idxItemAtivo ? 'ativo' : (item.status === 'confirmado' ? 'confirmado' : (item.status === 'manual' ? 'manual' : ''));
-    const estado = item.status === 'confirmado' ? '🟢' : item.status === 'manual' ? '🟡' : '';
+    const confirmado = item.status === 'confirmado';
+    const cls = confirmado ? 'confirmado' : (idx === idxProximo ? 'proximo' : '');
     const valorExibido = item.valor && item.valor !== '—' ? item.valor : (item.semProduto ? '⚠️ não selecionado' : '✓');
-    return '<div class="tile ' + cls + '">' +
-      (estado ? '<span class="estado">' + estado + '</span>' : '') +
+    return '<div class="tile ' + cls + '" onclick="toggleItem(' + idx + ')">' +
+      (confirmado ? '<span class="estado">🟢</span>' : '') +
       '<span class="emoji">' + emojiDoItem(item.label) + '</span>' +
       '<span class="label">' + item.label + '</span>' +
       '<span class="valor">' + valorExibido + '</span>' +
     '</div>';
   }).join('');
+  atualizarBotaoFinalizar();
 }
 
-function renderPainelCamera() {
-  const visor = document.getElementById('visor');
-  visor.classList.remove('ok', 'nok', 'checando');
-  const refThumb = document.getElementById('ref-thumb');
-  const nomeEl = document.getElementById('conferindo-nome');
-  const btnFinalizar = document.getElementById('btn-finalizar');
-  const btnManual = document.getElementById('btn-manual');
-
-  const item = itensAtual[idxItemAtivo];
-  if (!item) {
-    nomeEl.hidden = true;
-    refThumb.classList.add('hidden');
-    btnManual.disabled = true;
-    btnFinalizar.disabled = false;
-    setStatus('na', 'Tudo conferido — pode finalizar a box.');
-    return;
-  }
-
-  btnManual.disabled = false;
-  btnFinalizar.disabled = itensAtual.some(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
-  nomeEl.hidden = false;
-  if (item.produto.descricao) {
-    nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome + ' — ' + item.produto.descricao;
-    refThumb.classList.add('hidden');
-  } else if (item.produto.fotoUrl) {
-    nomeEl.textContent = '📸 Conferindo: ' + item.produto.nome;
-    refThumb.src = item.produto.fotoUrl;
-    refThumb.classList.remove('hidden');
-    getFotoReferenciaCacheada(item.produto.id); // começa a buscar no Drive já, antes do operador nem posicionar o produto
-  } else {
-    refThumb.classList.add('hidden');
-  }
-  setStatus('checando', 'Aponte o produto pra câmera — verificando automaticamente…');
+function atualizarBotaoFinalizar() {
+  const faltaAlgum = itensAtual.some(function(i) { return i.status === 'pendente'; });
+  document.getElementById('btn-finalizar').disabled = faltaAlgum;
 }
 
-function setStatus(tipo, texto) {
-  const dot = document.getElementById('status-dot');
-  dot.className = 'status-dot ' + (tipo === 'ok' ? 'ok' : tipo === 'nok' ? 'nok' : tipo === 'checando' ? 'checando' : '');
-  document.getElementById('status-texto').textContent = texto;
-}
-
-// ── Câmera ao vivo ───────────────────────────────────────────────
-async function iniciarCamera() {
-  if (videoStream) { iniciarLoopDeteccao(); return; }
-  try {
-    videoStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 960 } } });
-    document.getElementById('video').srcObject = videoStream;
-    document.getElementById('sem-camera').classList.add('hidden');
-    iniciarLoopDeteccao();
-  } catch (e) {
-    document.getElementById('sem-camera').classList.remove('hidden');
-    document.getElementById('sem-camera-msg').textContent = 'Não consegui acessar a câmera: ' + e.message;
-  }
-}
-
-function iniciarLoopDeteccao() {
-  if (loopId) return;
-  loopId = setInterval(tickDeteccao, 400);
-}
-function pararLoopDeteccao() {
-  if (loopId) { clearInterval(loopId); loopId = null; }
-  if (videoStream) { videoStream.getTracks().forEach(function(t) { t.stop(); }); videoStream = null; }
-}
-
-function tickDeteccao() {
-  if (conferindo) return;
-  const item = itensAtual[idxItemAtivo];
+// Tocar num item alterna confirmado/pendente — permite desmarcar em caso de toque errado.
+function toggleItem(idx) {
+  const item = itensAtual[idx];
   if (!item) return;
-  const video = document.getElementById('video');
-  if (!video.videoWidth) return;
-
-  const canvas = document.getElementById('canvas-detect');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const frame = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-
-  if (frameAnterior) {
-    let diff = 0;
-    for (let i = 0; i < frame.length; i += 4) diff += Math.abs(frame[i] - frameAnterior[i]);
-    const mediaDiff = diff / (frame.length / 4);
-    if (mediaDiff < LIMIAR_ESTAVEL) {
-      if (!estavelDesde) estavelDesde = Date.now();
-    } else {
-      estavelDesde = null;
-    }
-  }
-  frameAnterior = frame;
-
-  const agora = Date.now();
-  if (estavelDesde && (agora - estavelDesde) > TEMPO_ESTAVEL_MS && (agora - ultimaTentativa) > COOLDOWN_MS) {
-    ultimaTentativa = agora;
-    dispararConferencia();
-  }
-}
-
-// Cache da foto de referência por produto (só pra quem não tem descrição ainda) — busca
-// no Drive 1x só (promise compartilhada evita buscar 2x se cair aqui antes de terminar).
-let fotoRefCache = {};
-function getFotoReferenciaCacheada(idProduto) {
-  if (!fotoRefCache[idProduto]) {
-    fotoRefCache[idProduto] = apiPost('getFotoReferenciaBase64', [idProduto]);
-  }
-  return fotoRefCache[idProduto];
-}
-
-async function dispararConferencia() {
-  const item = itensAtual[idxItemAtivo];
-  if (!item || conferindo) return;
-  conferindo = true;
-  document.getElementById('visor').classList.add('checando');
-  setStatus('checando', 'Verificando…');
-
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas-captura');
-  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-  const base64 = canvas.toDataURL('image/jpeg', 0.85);
-
-  try {
-    // Descrição é o caminho rápido (1 imagem, sem Drive). Foto de referência é o modo
-    // antigo, só usado se o produto ainda não tem descrição cadastrada.
-    let res;
-    if (item.produto.descricao) {
-      res = await apiPost('conferirDescricaoCamera', [item.produto.nome, item.produto.descricao, base64, 'image/jpeg']);
-    } else {
-      const ref = await getFotoReferenciaCacheada(item.produto.id);
-      if (ref.erro) { res = ref; }
-      else { res = await apiPost('conferirFotosCamera', [item.produto.nome, ref.base64, ref.mime, base64, 'image/jpeg']); }
-    }
-    conferindo = false;
-    document.getElementById('visor').classList.remove('checando');
-    if (res.erro) { setStatus('nok', '⚠️ ' + res.erro); return; }
-    if (res.bate) {
-      item.status = 'confirmado';
-      document.getElementById('visor').classList.add('ok');
-      setStatus('ok', '✅ Bateu! ' + (res.motivo || ''));
-      renderGridItens();
-      setTimeout(avancarProximoItem, 900);
-    } else {
-      document.getElementById('visor').classList.add('nok');
-      setStatus('nok', '❌ Não bateu — ' + (res.motivo || 'tentando de novo…'));
-      setTimeout(function() { document.getElementById('visor').classList.remove('nok'); }, 1800);
-    }
-  } catch (err) {
-    conferindo = false;
-    document.getElementById('visor').classList.remove('checando');
-    setStatus('nok', '⚠️ Erro: ' + err.message);
-  }
-}
-
-function confirmarManual() {
-  const item = itensAtual[idxItemAtivo];
-  if (!item) return;
-  item.status = 'manual';
+  item.status = item.status === 'confirmado' ? 'pendente' : 'confirmado';
   renderGridItens();
-  avancarProximoItem();
 }
 
-function avancarProximoItem() {
-  idxItemAtivo = itensAtual.findIndex(function(i) { return i.precisaConferencia && i.status === 'pendente'; });
-  frameAnterior = null;
-  estavelDesde = null;
-  renderPainelCamera();
-  document.getElementById('visor').classList.remove('ok', 'nok');
+// Confirma o próximo item pendente, na ordem exibida — pensado pro atalho de teclado
+// (Espaço), pra quem prefere ir confirmando com uma mão só sem precisar tocar na tela.
+function confirmarProximoPendente() {
+  const idx = itensAtual.findIndex(function(i) { return i.status === 'pendente'; });
+  if (idx !== -1) toggleItem(idx);
 }
 
 async function finalizarBox() {
@@ -617,13 +385,14 @@ async function finalizarBox() {
     if (boxIdx === -1) { mostrarLoteConcluido(); return; }
     carregarBoxAtual();
   } catch (err) {
-    setStatus('nok', '⚠️ Erro ao finalizar: ' + err.message);
+    alert('Erro ao finalizar: ' + err.message);
+    btn.disabled = false;
   } finally {
     btn.textContent = '📦 Finalizar box';
   }
 }
 
-// Atalhos de teclado — Espaço confirma manualmente o item atual, Enter finaliza a box
+// Atalhos de teclado — Espaço confirma o próximo item pendente, Enter finaliza a box
 // (mãos ocupadas com o produto, sem precisar clicar em nada). Não dispara se o foco
 // estiver no campo de busca (ali Enter é pra buscar, não pra finalizar).
 window.addEventListener('keydown', function(e) {
@@ -633,7 +402,7 @@ window.addEventListener('keydown', function(e) {
 
   if (e.code === 'Space') {
     e.preventDefault();
-    if (itensAtual[idxItemAtivo]) confirmarManual();
+    confirmarProximoPendente();
   } else if (e.code === 'Enter' || e.code === 'NumpadEnter') {
     e.preventDefault();
     const btn = document.getElementById('btn-finalizar');
