@@ -24,11 +24,11 @@
   }
 
   * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; } /* cabe inteiro no monitor, sem rolar a página */
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'Archivo', sans-serif;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
   }
@@ -38,10 +38,10 @@
   h1, h2, h3 { text-wrap: balance; margin: 0; }
 
   /* ── Tela de seleção de lote ───────────────────────────────── */
-  .tela-lotes { max-width: 720px; margin: 0 auto; padding: 48px 24px; width: 100%; }
-  .tela-lotes h1 { font-size: 36px; letter-spacing: .5px; }
-  .tela-lotes .sub { color: var(--muted); margin-top: 6px; font-size: 15px; }
-  .lista-lotes { display: flex; flex-direction: column; gap: 10px; margin-top: 32px; }
+  .tela-lotes { max-width: 720px; margin: 0 auto; padding: 40px 24px; width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0; }
+  .tela-lotes h1 { font-size: 32px; letter-spacing: .5px; flex-shrink: 0; }
+  .tela-lotes .sub { color: var(--muted); margin-top: 6px; font-size: 15px; flex-shrink: 0; }
+  .lista-lotes { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; overflow-y: auto; min-height: 0; }
   .lote-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
     padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
@@ -70,17 +70,27 @@
   .topo .progresso-topo { display: flex; align-items: center; gap: 14px; }
   .topo .contagem-grande { font-size: 22px; }
   .topo .barra { width: 160px; }
+  .campo-busca {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 14px; font-size: 14px; color: var(--text); font-family: inherit;
+    width: 240px; outline: none;
+  }
+  .campo-busca:focus { border-color: var(--accent); }
+  .busca-aviso {
+    padding: 8px 28px; font-size: 13px; color: var(--warning); background: var(--warning-dim);
+    flex-shrink: 0;
+  }
   .btn-sair {
     background: var(--surface2); color: var(--muted); padding: 8px 16px;
     border-radius: 8px; font-size: 13px; font-weight: 600;
   }
   .btn-sair:hover { color: var(--text); }
 
-  .palco { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; padding: 28px; min-height: 0; }
+  .palco { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; padding: 20px 28px; min-height: 0; overflow: hidden; }
   @media (max-width: 900px) { .palco { grid-template-columns: 1fr; } }
 
-  .coluna-itens { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
-  .assinante-nome { font-size: 34px; line-height: 1.05; }
+  .coluna-itens { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; overflow-y: auto; }
+  .assinante-nome { font-size: 30px; line-height: 1.05; }
   .assinante-meta { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
   .badge-plano {
     background: var(--surface2); border: 1px solid var(--border); border-radius: 99px;
@@ -171,12 +181,15 @@
       <span class="nome-edicao" id="topo-nome-edicao">—</span>
       <span class="lote-tag" id="topo-lote">—</span>
     </div>
+    <input type="text" id="busca-assinante" class="campo-busca" placeholder="🔍 Buscar assinante (Enter)"
+      onkeydown="if (event.key === 'Enter') buscarBox(this.value)">
     <div class="progresso-topo">
       <span class="contagem-grande mono" id="topo-contagem">0/0</span>
       <div class="barra"><div class="barra-fill" id="topo-barra" style="width:0%"></div></div>
       <button class="btn-sair" onclick="sairDoLote()">← Trocar lote</button>
     </div>
   </div>
+  <div id="busca-aviso" class="busca-aviso hidden"></div>
 
   <div class="palco">
     <div class="coluna-itens">
@@ -582,13 +595,46 @@ async function finalizarBox() {
   }
 }
 
-// Atalho de teclado: espaço confirma manualmente o item atual (mãos ocupadas com o produto)
+// Atalhos de teclado — Espaço confirma manualmente o item atual, Enter finaliza a box
+// (mãos ocupadas com o produto, sem precisar clicar em nada). Não dispara se o foco
+// estiver no campo de busca (ali Enter é pra buscar, não pra finalizar).
 window.addEventListener('keydown', function(e) {
-  if (e.code === 'Space' && !document.getElementById('tela-operacional').classList.contains('hidden')) {
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (document.getElementById('tela-operacional').classList.contains('hidden')) return;
+
+  if (e.code === 'Space') {
     e.preventDefault();
     if (itensAtual[idxItemAtivo]) confirmarManual();
+  } else if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+    e.preventDefault();
+    const btn = document.getElementById('btn-finalizar');
+    if (btn && !btn.disabled) finalizarBox();
   }
 });
+
+// ── Busca de assinante (pular pra uma box específica, fora da ordem) ──
+function buscarBox(termo) {
+  const aviso = document.getElementById('busca-aviso');
+  termo = (termo || '').trim();
+  if (!termo) { aviso.classList.add('hidden'); return; }
+
+  const encontrado = boxes.findIndex(function(b) {
+    return b['Status de montagem'] !== 'Finalizado' &&
+      (b['Nome assinante'] || '').toLowerCase().includes(termo.toLowerCase());
+  });
+
+  if (encontrado === -1) {
+    aviso.textContent = '⚠️ Assinante não encontrado ou já montado.';
+    aviso.classList.remove('hidden');
+    return;
+  }
+
+  aviso.classList.add('hidden');
+  document.getElementById('busca-assinante').value = '';
+  boxIdx = encontrado;
+  carregarBoxAtual();
+}
 
 carregarListaLotes();
 </script>
