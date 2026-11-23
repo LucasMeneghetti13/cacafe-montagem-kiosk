@@ -244,9 +244,10 @@ function parseItensBox(texto) {
     if (l.includes('chocolate')) return 2;
     if (l.includes('brinde'))    return 3;
     if (l.includes('revista'))   return 4;
-    if (l.includes('cartão') || l.includes('boas-vindas')) return 5;
-    if (l.includes('aniversário') || l.includes('presente')) return 6;
-    return 7;
+    if (l.includes('presente de boas-vindas')) return 5;
+    if (l.includes('cartão') || l.includes('boas-vindas')) return 6;
+    if (l.includes('aniversário') || l.includes('presente')) return 7;
+    return 8;
   };
   return raw.sort(function(a, b) { return ordemTipo(a.label) - ordemTipo(b.label); });
 }
@@ -257,6 +258,7 @@ function emojiDoItem(label) {
   if (l.includes('chocolate')) return '🍫';
   if (l.includes('brinde')) return '🎁';
   if (l.includes('revista')) return '📖';
+  if (l.includes('presente de boas-vindas')) return '🎁';
   if (l.includes('cartão') || l.includes('boas-vindas')) return '💌';
   if (l.includes('aniversário') || l.includes('presente')) return '🎂';
   return '✓';
